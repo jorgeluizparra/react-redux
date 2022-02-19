@@ -1,0 +1,19 @@
+.form-component {
+    .cancel-btn {
+        margin-right: 5px;
+    }
+
+    .align-right {
+        padding-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .MuiFormControl-root {
+        width: 100%;
+        
+        .MuiTextField-root {
+            margin-bottom: 10px;
+        }
+    }
+}
