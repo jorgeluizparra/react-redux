@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import './home.scss'
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUsers, deleteUser } from '../../store/users/usersSlice'
@@ -15,11 +15,23 @@ import DialogComponent from '../../components/dialog/dialog'
 export default function HomePage() {
     const { users } = useSelector(selectUsers);
     const dispatch = useDispatch();
+    const navigate = useNavigate ();
     const [deleteId, setDeleteId ] = useState('')
+    const [openDialog, setOpenDialog ] = useState(false)
 
-    function onDelete () {
-      dispatch(deleteUser({ id: deleteId }))
+    function handleDeleteClick (id) {
+      setDeleteId(id)
+      setOpenDialog(true)
+    }
+
+    function clearDeleteData() {
       setDeleteId('')
+      setOpenDialog(false)
+    }
+
+    function handleDelete () {
+      dispatch(deleteUser({ id: deleteId }))
+      clearDeleteData()
     }
 
     return (
@@ -36,14 +48,19 @@ export default function HomePage() {
             />
             <TableComponent
               rows={users}
-              onDelete={setDeleteId}
+              onDelete={handleDeleteClick}
+              onEdit={(id) => navigate('edit-user/' + id)}
             />
           </CardContent>
         </Card>
         <DialogComponent
-          id={deleteId}
-          handleAccept={onDelete}
-          handleCancel={setDeleteId}
+          open={openDialog}
+          title="Delete user"
+          text="Are you sure ?"
+          acceptLabel="Delete"
+          cancelBtn
+          handleAccept={handleDelete}
+          handleCancel={clearDeleteData}
         />
       </div>
     );

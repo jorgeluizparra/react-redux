@@ -1,59 +1,43 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState } from 'react';
 import './form.scss'
-import { useDispatch } from 'react-redux';
-import { addUser } from '../../store/users/usersSlice'
 
 // Components
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormControl, { useFormControl } from '@mui/material/FormControl';
+import DialogComponent from '../dialog/dialog'
+import Box from '@mui/material/Box';
 
-export default function FormComponent () {
-    const dispatch = useDispatch();
-    const navigate = useNavigate ();
-    const [ state, setState ] = useState({
-        name: "",
-        username: "",
-        email: "",
-        address: ""
-    })
-    const [ invalidFields, setInvalidFields ] = useState([]);
+export default function FormComponent ({ state, onChange, onSubmit }) {
+    const [ openErrorDialog, setOpenErrorDialog ] = useState(false)
+    const [ errorMessage, setErrorMessage ] = useState('')
 
     function handleStateChange (event) {
         let { name, value } = event.target
-        setState({
+        onChange({
             ...state,
             [name]: value
         });
     }
 
     function handleSubmit () {
-        const requiredFields = ['name', 'email']
-        if (state.name && state.email) {
-            dispatch(addUser(state))
-            navigate('/')
+        if (!state.name || !state.email) {
+            setErrorMessage('Name and email fields are required.')
+            setOpenErrorDialog(true)
+        } else if (state.email.match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]{2,}){1,2}$/) == null) {
+            setErrorMessage('Invalid email.')
+            setOpenErrorDialog(true)
         } else {
-            var newValue = invalidFields
-            requiredFields.forEach(field => {
-                if (!state[field]) {
-                    newValue.push(field)
-                } else {
-                    newValue = newValue.filter(invalidField => invalidField != field)
-                }
-            })
-            setInvalidFields(newValue)
+            onSubmit()
         }
-        console.log(invalidFields);
     }
 
     return (
         <div className="form-component">
-            <FormControl>
+            <Box sx={{ display: 'grid', gridTemplateRows: 'repeat(3, 1fr)', rowGap: 1 }}>
                 <TextField
                     value={state.name}
                     onChange={handleStateChange}
-                    {...(invalidFields["name"] && { error: true, helperText: "Required field." })}
                     required
                     id="outlined-required"
                     label="Name"
@@ -62,7 +46,6 @@ export default function FormComponent () {
                 <TextField
                     value={state.email}
                     onChange={handleStateChange}
-                    {...(invalidFields["email"] && { error: true, helperText: "Required field." })}
                     required
                     id="outlined-required"
                     label="Email"
@@ -82,13 +65,20 @@ export default function FormComponent () {
                     label="City"
                     name="address"
                 />
-            </FormControl>
+            </Box>
             <div className="align-right">
                 <Link to="/">
-                    <Button className="cancel-btn" variant="outlined" color="error">Cancel</Button>
+                    <Button className="cancel-btn" variant="outlined">Cancel</Button>
                 </Link>
                 <Button onClick={handleSubmit} variant="contained" color="success">Submit</Button>
             </div>
+            <DialogComponent
+                open={openErrorDialog}
+                title="Invalid information"
+                text={errorMessage}
+                acceptLabel="Ok"
+                handleAccept={() => setOpenErrorDialog(false)}
+            />
         </div>
     )
 }
